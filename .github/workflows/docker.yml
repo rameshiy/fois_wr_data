@@ -1,9 +1,9 @@
-name: Docker CI/CD 
-on: [push] 
-jobs: 
-  build: 
-    runs-on: ubuntu-latest 
-    steps: 
-    - uses: actions/checkout@v3 
-    - name: Build Docker image 
-      run: docker build -t fois_wr_data . 
+name: Build and Push Docker Image
+on: [push]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Build Docker image
+      run: docker build -t fois_wr_data .

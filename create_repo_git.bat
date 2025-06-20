@@ -145,6 +145,41 @@ echo Creating Dockerfile...
     echo CMD ["python", "app.py"]
 ) > Dockerfile
 
+REM === Step 2.5: Ensure Dockerfile runs app with venv python ===
+REM (Overwrite or create Dockerfile with correct CMD)
+(
+    echo FROM python:3.10.14-slim
+    echo.
+    echo WORKDIR /app
+    echo.
+    echo RUN apt-get update ^&^& apt-get install -y --no-install-recommends ^\
+        gcc ^\
+        libc-dev ^\
+        ^&^& rm -rf /var/lib/apt/lists/*
+    echo.
+    echo COPY requirements.txt /app/
+    echo.
+    echo RUN python -m venv /app/venv ^&^& ^\
+        /app/venv/bin/pip install --no-cache-dir --upgrade pip ^&^& ^\
+        /app/venv/bin/pip install --no-cache-dir -r requirements.txt || ^{ echo "Failed to install requirements"; exit 1; ^}
+    echo.
+    echo COPY . /app
+    echo.
+    echo RUN chown -R nobody:nogroup /app ^&^& ^\
+        chmod -R 755 /app
+    echo.
+    echo ENV PATH="/app/venv/bin:$PATH"
+    echo.
+    echo USER nobody
+    echo.
+    echo HEALTHCHECK --interval=30s --timeout=3s ^\
+        CMD curl -f http://localhost:%port%/health || exit 1
+    echo.
+    echo CMD ["/app/venv/bin/python", "app.py"]
+) > Dockerfile
+
+echo Dockerfile created/updated to use venv python.
+
 REM === Step 6: Create GitHub Actions Workflow ===
 echo Setting up GitHub Actions workflow for local build validation...
 mkdir .github\workflows 2>nul

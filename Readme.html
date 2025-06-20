@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>FOIS API Client - Mobile README</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 1em;
+      line-height: 1.6;
+      color: #222;
+    }
+    h1, h2, h3 {
+      color: #2c3e50;
+    }
+    code {
+      background: #f4f4f4;
+      padding: 2px 6px;
+      border-radius: 4px;
+      display: inline-block;
+    }
+    pre {
+      background: #f4f4f4;
+      padding: 10px;
+      border-radius: 6px;
+      overflow-x: auto;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1em 0;
+    }
+    table, th, td {
+      border: 1px solid #ccc;
+    }
+    th, td {
+      padding: 0.5em;
+      text-align: left;
+    }
+  </style>
+</head>
+<body>
+
+<h1>🚂 FOIS API Client</h1>
+
+<p>A Python client for accessing Freight Operations Information System (FOIS) data via Indian Railways' CRIS API.</p>
+
+<p>It fetches historic freight data, filters for Western Railway, and stores it in Google Sheets.</p>
+
+<hr/>
+
+<h2>📋 Description</h2>
+<ul>
+  <li>Connects to FOIS API</li>
+  <li>Retrieves: Indent data, Detention data, Weight/Lead statistics</li>
+  <li>Zone filter: WR (zone, srczone, or dstnzone)</li>
+  <li>Stores in Google Sheets with duplicate checks</li>
+</ul>
+
+<h2>✨ Features</h2>
+<ul>
+  <li>🔐 OAuth2 - Auto token management</li>
+  <li>📊 Multiple endpoints: <code>pndgindt</code>, <code>plctresndttn</code>, <code>wghtleadntkmfrgt</code></li>
+  <li>🔄 Historic data fetch by days</li>
+  <li>🎯 WR zone filtering</li>
+  <li>🛡️ Rate limit handling (pause after 10 calls)</li>
+  <li>📁 Push to Google Sheets</li>
+  <li>🧹 Token revocation on exit</li>
+  <li>📝 Uses <code>.env</code> for credentials</li>
+</ul>
+
+<h2>🗂️ Endpoints & Filters</h2>
+<table>
+  <tr><th>Endpoint</th><th>Description</th><th>Filter</th></tr>
+  <tr><td>pndgindt</td><td>Pending Indent Data</td><td>zone = "WR"</td></tr>
+  <tr><td>plctresndttn</td><td>Placement & Release Detention</td><td>zone = "WR"</td></tr>
+  <tr><td>wghtleadntkmfrgt</td><td>Weight, Lead, NTKM & Freight</td><td>dstnzone or srczone = "WR"</td></tr>
+</table>
+
+<h2>🔧 Requirements</h2>
+<ul>
+  <li>Python 3.7+</li>
+  <li>Install dependencies:</li>
+</ul>
+
+<pre>pip install -r requirements.txt</pre>
+
+<h3>Python Packages</h3>
+<ul>
+  <li>requests</li>
+  <li>python-dotenv</li>
+  <li>pandas</li>
+  <li>gspread</li>
+  <li>oauth2client</li>
+</ul>
+
+<h2>🔑 Setup Instructions</h2>
+
+<h3>1. Create .env File</h3>
+<pre>
+CLIENT_ID=your_client_id
+CLIENT_SECRET=your_client_secret
+GSHEET_ID=your_spreadsheet_id
+GSHEET_NAME=your_spreadsheet_name  # optional
+</pre>
+
+<h3>2. Google Sheets Access</h3>
+<ul>
+  <li>Create service account in Google Cloud Console</li>
+  <li>Download <code>gs_credentials.json</code></li>
+  <li>Share the target Google Sheet with the service account email</li>
+</ul>
+
+<h2>🎮 Usage</h2>
+
+<pre>python fois_data_historic.py --days &lt;number_of_days&gt; [--endpoint &lt;name_or_index&gt;]</pre>
+
+<h3>Examples</h3>
+<ul>
+  <li>All endpoints for 5 days:<br/><code>python fois_data_historic.py --days 5</code></li>
+  <li>Only plctresndttn for 3 days:<br/><code>python fois_data_historic.py --days 3 --endpoint plctresndttn</code></li>
+  <li>wghtleadntkmfrgt by index:<br/><code>python fois_data_historic.py --days 10 --endpoint 3</code></li>
+</ul>
+
+<h2>📊 Sample Output</h2>
+<pre>
+Connected to Google Sheet: FOIS Data
+Processing endpoint: pndgindt for 05-06-2025
+✅ Data written to Google Sheets
+...
+</pre>
+
+<h2>📁 File Structure</h2>
+<pre>
+fois-api-client/
+├── fois_data_historic.py
+├── requirements.txt
+├── .env
+├── gs_credentials.json
+└── README.md
+</pre>
+
+<h2>⚠️ Important Notice</h2>
+<p>
+  Do not alter the google sheet Freight_API_Data instead use Copy of Freight_API_Data.
+  Connect Dashboard to Copy of Freight_API_Data.
+  This ensures data integrity and prevents overwriting.
+</p>
+
+
+
+<h2>⚠️ Confidentiality Notice</h2>
+<p>
+  Do not share or expose your credentials. Keep <code>.env</code> and <code>gs_credentials.json</code> private.
+</p>
+
+<h2>🚨 Error Handling</h2>
+<ul>
+  <li>Invalid credentials</li>
+  <li>Token expiration</li>
+  <li>Network issues</li>
+  <li>Rate limits (auto pause after 10 calls)</li>
+  <li>Google Sheets write retries (3x)</li>
+</ul>
+
+</body>
+</html>

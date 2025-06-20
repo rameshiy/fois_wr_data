@@ -1,0 +1,6 @@
+requests
+dotenv
+pandas
+gspread
+oauth2client
+mysql-connector-python

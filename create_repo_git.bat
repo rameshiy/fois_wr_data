@@ -44,6 +44,27 @@ if not exist ".git" (
     )
 )
 
+:: Ensure main branch exists
+git rev-parse --verify main >nul 2>&1
+if %ERRORLEVEL% neq 0 (
+    git rev-parse --verify master >nul 2>&1
+    if %ERRORLEVEL% equ 0 (
+        echo Renaming master branch to main...
+        git branch -m master main || (
+            echo Error: Failed to rename master to main.
+            pause
+            exit /b 1
+        )
+    ) else (
+        echo Creating main branch...
+        git checkout -b main || (
+            echo Error: Failed to create main branch.
+            pause
+            exit /b 1
+        )
+    )
+)
+
 :: Add all files and commit
 git add . || (
     echo Error: Failed to stage files for commit.
@@ -51,21 +72,25 @@ git add . || (
     exit /b 1
 )
 git commit -m "Initial commit with requirements.txt and Dockerfile" >nul 2>&1 || (
-    echo Error: Git commit failed. Ensure there are changes to commit.
-    pause
-    exit /b 1
+    echo Warning: No changes to commit or commit failed. Proceeding...
 )
 
-REM === Step 4: Check if GitHub Repo Exists ===
+REM === Step 4: Check and Configure GitHub Repo ===
 echo Checking if GitHub repo %repo_name% exists...
 gh repo view %repo_owner%/%repo_name% >nul 2>&1
 if %ERRORLEVEL% equ 0 (
-    echo Repo %repo_name% already exists. Linking and pushing...
-    git remote add origin https://github.com/%repo_owner%/%repo_name%.git 2>nul || (
-        echo Warning: Remote origin already exists or failed to add.
+    echo Repo %repo_name% already exists. Configuring remote...
+    :: Remove existing origin to avoid conflicts
+    git remote remove origin >nul 2>&1
+    git remote add origin https://github.com/%repo_owner%/%repo_name%.git || (
+        echo Error: Failed to add GitHub remote.
+        pause
+        exit /b 1
     )
+    echo Pushing to GitHub...
     git push -u origin main || (
-        echo Error: Failed to push to GitHub.
+        echo Error: Failed to push to GitHub. Check GitHub CLI authentication or network.
+        echo Run `gh auth login` if not authenticated.
         pause
         exit /b 1
     )
@@ -73,6 +98,7 @@ if %ERRORLEVEL% equ 0 (
     echo Creating GitHub repo %repo_name%...
     gh repo create %repo_owner%/%repo_name% --public --source=. --remote=origin --push || (
         echo Error: Failed to create GitHub repo. Check repo name, network, or GitHub CLI authentication.
+        echo Run `gh auth login` if not authenticated.
         pause
         exit /b 1
     )
@@ -168,6 +194,7 @@ echo ✅ Done! Project synced with GitHub, Docker image built, and container run
 echo Notes:
 echo 1. Ensure app.py exposes port %port% (e.g., Flask on %port%).
 echo 2. If no /health endpoint, remove or update HEALTHCHECK in Dockerfile.
-echo 3. GitHub Actions will validate builds on push but won't push to a registry.
+echo 3. GitHub Actions will validate builds on push.
 echo 4. Check container logs if needed: `docker logs %container_name%`
+echo 5. If Git push issues persist, verify authentication with `gh auth status`.
 pause

@@ -18,6 +18,7 @@ IF NOT EXIST ".git" (
     git init
 )
 
+REM Add all files and commit
 git add .
 git commit -m "Initial commit" >nul 2>&1
 IF %ERRORLEVEL% NEQ 0 (
@@ -26,12 +27,21 @@ IF %ERRORLEVEL% NEQ 0 (
     exit /b
 )
 
-REM === Step 4: Create GitHub Repo ===
-echo Creating GitHub repo...
-gh repo create %repo_name% --public --source=. --remote=origin --push || (
-    echo Failed to create GitHub repo. Please check repo name or network.
-    pause
-    exit /b
+REM === Step 4: Check if GitHub repo exists ===
+echo Checking if GitHub repo already exists...
+gh repo view %repo_name% >nul 2>&1
+
+IF %ERRORLEVEL% EQU 0 (
+    echo Repo %repo_name% already exists. Linking and pushing...
+    git remote add origin https://github.com/rameshiy/%repo_name%.git 2>nul
+    git push -u origin master
+) ELSE (
+    echo Creating GitHub repo...
+    gh repo create %repo_name% --public --source=. --remote=origin --push || (
+        echo Failed to create GitHub repo. Please check repo name or network.
+        pause
+        exit /b
+    )
 )
 
 REM === Step 5: Create Dockerfile ===
@@ -71,5 +81,5 @@ echo Running Docker container...
 docker run -d -p %port%:%port% --name %container_name% %image_name%
 
 echo.
-echo ✅ Done! GitHub repo created, Docker image built, and container running on port %port%.
+echo ✅ Done! Project synced with GitHub, Docker image built, and container running on port %port%.
 pause

@@ -6,7 +6,7 @@ import argparse
 import sys
 import time
 from dotenv import load_dotenv
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta 
 import pandas as pd
 import mysql.connector
 from mysql.connector import Error

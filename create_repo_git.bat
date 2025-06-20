@@ -80,7 +80,6 @@ echo Checking if GitHub repo %repo_name% exists...
 gh repo view %repo_owner%/%repo_name% >nul 2>&1
 if %ERRORLEVEL% equ 0 (
     echo Repo %repo_name% already exists. Configuring remote...
-    :: Remove existing origin to avoid conflicts
     git remote remove origin >nul 2>&1
     git remote add origin https://github.com/%repo_owner%/%repo_name%.git || (
         echo Error: Failed to add GitHub remote.
@@ -123,7 +122,8 @@ echo Creating Dockerfile...
     echo # Create virtual environment and install dependencies
     echo RUN python -m venv /app/venv && \
     echo     /app/venv/bin/pip install --no-cache-dir --upgrade pip && \
-    echo     /app/venv/bin/pip install --no-cache-dir -r requirements.txt
+    echo     /app/venv/bin/pip install --no-cache-dir -r requirements.txt && \
+    echo     /app/venv/bin/pip list
     echo.
     echo # Copy the rest of the application
     echo COPY . /app
@@ -192,9 +192,10 @@ docker run -d -p %port%:%port% --name %container_name% %image_name%:latest || (
 echo.
 echo ✅ Done! Project synced with GitHub, Docker image built, and container running locally on port %port%.
 echo Notes:
-echo 1. Ensure app.py exposes port %port% (e.g., Flask on %port%).
+echo 1. Ensure app.py exposes port %port% (e.g., Streamlit on %port%).
 echo 2. If no /health endpoint, remove or update HEALTHCHECK in Dockerfile.
 echo 3. GitHub Actions will validate builds on push.
 echo 4. Check container logs if needed: `docker logs %container_name%`
 echo 5. If Git push issues persist, verify authentication with `gh auth status`.
+echo 6. If ModuleNotFoundError persists, check build logs for `pip list` output.
 pause

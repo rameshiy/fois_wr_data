@@ -1,9 +1,16 @@
-name: Build and Push Docker Image
-on: [push]
+name: Build Docker Image
+
+on:
+  push:
+    branches: [main]
+
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
-    - uses: actions/checkout@v3
+    - name: Checkout code
+      uses: actions/checkout@v4
+
     - name: Build Docker image
-      run: docker build -t fois_wr_data .
+      run: docker build -t fois_wr_data:latest .
